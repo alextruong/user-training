@@ -132,6 +132,12 @@ If you'd like to follow along interactively with the rest of this workshop on O2
 source /n/groups/rc-training/python/env/trainingvenv/bin/activate
 ```
 
+A few examples later in this workshop (see [A Few Useful Modules for Scientific Computing](#a-few-useful-modules-for-scientific-computing)) use NumPy, SciPy, and Matplotlib. If you're using the pre-built `trainingvenv` above, these are already installed for you. If you've created your own environment instead — on O2 or on your own computer — you can install the exact versions this workshop was tested with from the pinned [`requirements.txt`](https://github.com/alextruong/user-training/blob/gh-pages/Intro_Python/requirements.txt) in this workshop's repository. After downloading it into your working directory:
+
+```bash
+pip3 install -r requirements.txt
+```
+
 ## Writing Your First Python Script
 You can create a simple Python script using any text editor. For this example, we'll use `nano`, a command-line text editor available on O2, Mac/Linux terminals, and WSL alike. Create a new file called `hello.py` by running:
 
@@ -192,13 +198,32 @@ Occasionally you'll want a quote character to appear *inside* a string that's al
 >>> print(""hello world"")
   File "<stdin>", line 1
     print(""hello world"")
-                        ^
-SyntaxError: invalid syntax
+          ^^^^^^^
+SyntaxError: invalid syntax. Perhaps you forgot a comma?
 >>> print("\"hello world\"")
 "hello world"
 ```
 
 A full list of escape characters (like `\n` for a new line, or `\t` for a tab) can be found in the [Python documentation](https://docs.python.org/3/reference/lexical_analysis.html#literals).
+
+### Building Strings from Variables
+Often you'll want to combine text with the value of a variable, rather than typing out a fixed string. One way is to concatenate strings together with `+` (as long as everything you're joining is already a string):
+
+```python
+>>> name = "world"
+>>> print("hello, " + name)
+hello, world
+```
+
+A more flexible option is an **f-string**: put an `f` right before the opening quote, and any variable (or expression) inside `{}` gets substituted in automatically, including converting non-string values like numbers into text for you:
+
+```python
+>>> age = 5
+>>> print(f"{name} is {age} years old")
+world is 5 years old
+```
+
+f-strings are extremely common in real Python code, and we'll use them for the rest of this workshop whenever we need to build a string out of other values.
 
 ### Comments
 Comments are notes in your code meant for humans to read — Python ignores them entirely. They're denoted with `#`:
@@ -239,6 +264,99 @@ Python is **dynamically typed**, which means you don't need to declare what kind
 1
 ```
 
+Let's look at a few of the fundamental types you'll use constantly — and the operations that go with them — in a bit more depth.
+
+### Numbers and Arithmetic
+Python has two main numeric types you'll run into early on: whole numbers (**int**) and decimal numbers (**float**). The usual arithmetic operators work as you'd expect, with a couple of Python-specific additions:
+
+```python
+>>> 7 + 3
+10
+>>> 7 - 3
+4
+>>> 7 * 3
+21
+>>> 7 / 3       # division always gives back a float
+2.3333333333333335
+>>> 7 // 3      # floor division: divide, then round down to a whole number
+2
+>>> 7 % 3       # modulo: the remainder left over after floor division
+1
+>>> 7 ** 3      # exponentiation
+343
+```
+
+The `%` (modulo) operator is worth remembering in particular — it's a common way to test whether a number is even (`number % 2 == 0`) or to check for multiples of something, since it gives you the remainder rather than the result of the division itself.
+
+### Booleans and Comparisons
+Python's boolean type, `bool`, has exactly two possible values: `True` and `False`. You'll most often produce one by comparing two things:
+
+```python
+>>> 3 < 5
+True
+>>> 3 > 5
+False
+>>> 3 == 3
+True
+>>> 3 != 5
+True
+```
+
+The comparison operators are `==` (equal), `!=` (not equal), `<`, `>`, `<=`, and `>=`. You can also combine multiple conditions with the logical operators `and`, `or`, and `not`:
+
+```python
+>>> age = 25
+>>> age >= 18 and age < 65
+True
+>>> not (age < 18)
+True
+```
+
+We'll put these to work in the next section, when we start making decisions in our code with `if` statements and loops.
+
+### `None`
+Python also has a special value, `None`, which represents the absence of a value — Python's version of "nothing here yet." It's often used as a placeholder before real data is available:
+
+```python
+>>> lst = [None, None, None]
+>>> lst[0] is None
+True
+```
+
+Note the use of `is` rather than `==` above — checking specifically for `None` is conventionally done with `is`, though the distinction between the two is a bit beyond what we need today.
+
+### Checking and Converting Types
+If you're ever unsure what type a variable currently holds, `type()` will tell you:
+
+```python
+>>> type(7)
+<class 'int'>
+>>> type("abc")
+<class 'str'>
+>>> type(True)
+<class 'bool'>
+```
+
+You can also convert a value from one type to another using `int()`, `float()`, or `str()`:
+
+```python
+>>> int("7")
+7
+>>> float("7.5")
+7.5
+>>> str(7)
+'7'
+>>> int("7") + 3
+10
+>>> "7" + 3
+Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+TypeError: can only concatenate str (not "int") to str
+```
+
+That last example is a common early stumbling block: Python won't automatically convert a string into a number for you (or vice versa) — you have to do it explicitly. This will matter shortly, since anything read in from a file or typed in by a user always arrives as a string, numbers included.
+
+### A Note on Mutability
 One important nuance: strings are **immutable**, meaning you cannot modify their contents in place once created. When you "change" a string, you're actually creating a brand-new string and pointing the variable at it — the original is left untouched (and, since nothing refers to it anymore, is eventually cleaned up automatically). You can read individual characters out of a string, but you can't assign into one:
 
 ```python
@@ -329,6 +447,23 @@ A **tuple** looks like a list, but is immutable — once created, it can't be ch
 (1, 2, 3)
 ```
 
+Tuples show up naturally whenever you want to assign several values at once, since a comma-separated list of values (with or without parentheses) *is* a tuple. Python lets you unpack one directly into multiple variables in a single line:
+
+```python
+>>> a, b = 1, 2
+>>> a
+1
+>>> b
+2
+>>> a, b = b, a    # a common idiom for swapping two variables
+>>> a
+2
+>>> b
+1
+```
+
+This is called **tuple unpacking**, and it comes up often enough — including later today, when we loop over `(index, value)` pairs — that it's worth recognizing on sight.
+
 ### Sets
 A **set** is an unordered collection with no duplicates. Sets are handy whenever you care about uniqueness, or need to compare groups of values against each other:
 
@@ -373,6 +508,23 @@ dict_values(['c', 'e', 'f', 'g'])
 'no such key'
 ```
 
+### Checking Membership with `in`
+Across all of these structures, the `in` operator lets you check whether something is present, without writing your own loop to search for it:
+
+```python
+>>> lst = ['a', 'b', 'c']
+>>> 'b' in lst
+True
+>>> 'z' in lst
+False
+>>> 3 in dict1
+True
+>>> 'hello' in "hello world"
+True
+```
+
+This works the same way on lists, sets, and strings (checking for a substring), and on dictionaries (checking their keys).
+
 There's a lot more you can do with all of these data structures. If you find yourself wondering whether a particular structure can do a particular thing, it's very likely someone has already asked (and answered) that exact question online.
 
 ## Controlling the Flow of Your Program
@@ -404,6 +556,8 @@ If you need the position of each item as well as its value, use `enumerate()`:
 2 cherry
 ```
 
+Notice that `idx` and `thing` are assigned together on one line — that's the tuple unpacking from the [Tuples](#tuples) section earlier, applied here to the `(index, value)` pairs that `enumerate()` produces one at a time.
+
 And if you just need to repeat something a fixed number of times, `range()` gives you a simple sequence of numbers to loop over:
 
 ```python
@@ -416,6 +570,29 @@ And if you just need to repeat something a fixed number of times, `range()` give
 3
 4
 ```
+
+### Building Lists with Comprehensions
+A very common pattern is looping over something just to build a new list out of it — for example, doubling every number in a list:
+
+```python
+>>> numbers = [1, 2, 3, 4]
+>>> doubled = []
+>>> for n in numbers:
+...     doubled.append(n * 2)
+...
+>>> doubled
+[2, 4, 6, 8]
+```
+
+Python offers a shorthand for exactly this pattern, called a **list comprehension**, which packs the loop and the `append` into a single expression:
+
+```python
+>>> doubled = [n * 2 for n in numbers]
+>>> doubled
+[2, 4, 6, 8]
+```
+
+It reads left to right as "give me `n * 2`, for each `n` in `numbers`." List comprehensions can feel a little dense at first, but they're extremely common in real Python code, so it's worth recognizing the pattern even if you stick with a regular loop while you're still getting comfortable.
 
 ### `while` Loops
 A `while` loop repeats as long as some condition stays true. It's useful when you don't know in advance how many times you'll need to iterate — for example, while waiting for a calculation to converge:
@@ -501,7 +678,7 @@ Functions can also accept **arguments** — values passed in when the function i
 ```python
 >>> def greet(name):
 ...     print("hello,", name)
-...     farewell = "goodbye, " + name
+...     farewell = f"goodbye, {name}"
 ...     return farewell
 ...
 >>> message = greet("world")
@@ -513,7 +690,7 @@ goodbye, world
 If you don't include a `return` statement, Python assumes you meant to return nothing — but it's good practice to write `return` explicitly (even bare, with nothing after it) when a function isn't meant to hand back a value, just for clarity.
 
 ## Structuring a Complete Script
-Now that we've covered the core building blocks, let's revisit `hello.py` and turn it into something closer to a proper Python program.
+Now that we've covered the core building blocks, let's put them to use on something a bit more substantial than `hello.py`.
 
 Strictly speaking, all a Python program needs is a text file with a **shebang** line at the top:
 
@@ -523,73 +700,161 @@ Strictly speaking, all a Python program needs is a text file with a **shebang** 
 
 This line tells the operating system what program should be used to run this file — in this case, whatever `python3` is currently active in your environment. Similar shebangs exist for other languages, like `#!/bin/bash` or `#!/usr/bin/perl`. We specifically use `#!/usr/bin/env python3` (rather than, say, `#!/usr/bin/python3`) for portability: `env` looks up whatever Python is currently active in your environment (for example, inside your loaded module or virtual environment), rather than hard-coding one specific installation path. This matters especially on a shared system like O2, where multiple versions of Python may be installed side by side.
 
-As scripts grow beyond a single `print()` statement, it's conventional to organize them with imports at the top, any functions or classes you need, and a `main()` function that contains the code that actually runs, guarded by an `if __name__ == '__main__':` check:
+As scripts grow beyond a single `print()` statement, it's conventional to organize them with imports at the top, any functions or classes you need, and a `main()` function that contains the code that actually runs, guarded by an `if __name__ == "__main__":` check. In its most generic form, that shape looks like this:
 
 ```python
 #!/usr/bin/env python3
 
-# imports go here, if you need any
+# imports go here
 
-def greet(name):
-    """Return a farewell message after greeting someone by name."""
-    print("hello,", name)
-    return "goodbye, " + name
 
 def main():
-    message = greet("world")
-    print(message)
+    pass  # the code that actually runs goes here
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     main()
 ```
 
-The `if __name__ == '__main__':` line looks a little cryptic at first, but the idea is simple: it makes sure `main()` only runs when you execute this file directly (e.g. `python3 hello.py`), and not if this file is instead imported as a module from somewhere else. You'll see this pattern in the vast majority of standalone Python scripts, so it's worth recognizing even before it fully makes sense.
+You'll see this same skeleton — imports, then functions, then a `main()` guarded by that `if __name__ == "__main__":` check — at the top of the vast majority of standalone Python scripts, regardless of what the script actually does. Let's fill it in with something more substantial: a small script that reads a FASTA file — a common plain-text format for biological sequences — and reports each sequence's **GC content**, a basic measure of how much of a DNA sequence is made up of G and C bases rather than A and T.
 
-To run it, same as before:
+Here's a small FASTA file, `sequences.fasta`, with three short sequences (each record is a header line starting with `>`, followed by one or more lines of sequence):
+
+```
+>seq_001
+ATGCATGCATGC
+>seq_002
+GGGGCCCCAAAA
+>seq_003
+AAAATTTTGGGG
+```
+
+And here's `sequences.py`, which parses that file and reports on it:
+
+```python
+#!/usr/bin/env python3
+
+
+def parse_fasta(filename):
+    """Read a FASTA file into a list of (header, sequence) tuples."""
+    records = []
+    header = None
+    sequence = ""
+    with open(filename, "r", encoding="utf-8") as f:
+        for line in f:
+            line = line.strip()
+            if line.startswith(">"):
+                if header is not None:
+                    records.append((header, sequence))
+                header = line[1:]
+                sequence = ""
+            else:
+                sequence += line
+    if header is not None:
+        records.append((header, sequence))
+    return records
+
+
+def gc_content(sequence):
+    """Return the percentage of a sequence's bases that are G or C."""
+    gc_count = 0
+    for base in sequence:
+        if base in "GC":
+            gc_count += 1
+    return gc_count / len(sequence) * 100
+
+
+def main():
+    records = parse_fasta("sequences.fasta")
+
+    gc_values = []
+    for header, sequence in records:
+        percent_gc = gc_content(sequence)
+        gc_values.append(percent_gc)
+        print(f"{header}: {percent_gc:.2f}% GC")
+
+    average = sum(gc_values) / len(gc_values)
+    print(f"Average GC content: {average:.2f}%")
+
+
+if __name__ == "__main__":
+    main()
+```
+
+There's a fair amount going on here, but every piece builds on something from earlier in this workshop:
+
+- `parse_fasta` opens the file with a context manager and loops over it line by line, same as in [Reading and Writing Files](#reading-and-writing-files)
+- `line.startswith(">")` is a string method, and `line[1:]` reuses the slice syntax from the [Lists](#lists) section — strings can be sliced too, so this just means "everything after the first character," dropping the leading `>`
+- `sequence += line` is shorthand for `sequence = sequence + line`, building up the full sequence one line at a time
+- `if header is not None:` uses the `is`-based check from the [`None`](#none) section
+- `gc_content` loops over a string one character at a time — the same `for x in y` pattern works on strings, not just lists — and `if base in "GC":` is the same `in` operator from [Checking Membership with `in`](#checking-membership-with-in), just checking a single character against a short string
+- `for header, sequence in records:` is tuple unpacking again, same as `for idx, thing in enumerate(things)` earlier
+- `len(sequence)` and `sum(gc_values)` are two more built-in functions worth knowing: `len()` gives you the number of items in a list or characters in a string, and `sum()` adds up a list of numbers
+- the f-strings use one new trick: `{percent_gc:.2f}` means "format this as a decimal number rounded to 2 places" — handy any time you're printing something you don't want ten digits of
+
+The `if __name__ == "__main__":` line looks a little cryptic at first, but the idea is simple: it makes sure `main()` only runs when you execute this file directly (e.g. `python3 sequences.py`), and not if this file is instead imported as a module from somewhere else. You'll see this pattern in the vast majority of standalone Python scripts, so it's worth recognizing even before it fully makes sense.
+
+You may have noticed the two blank lines separating each top-level function above, rather than just one — that's not arbitrary spacing. It follows [PEP 8](https://peps.python.org/pep-0008/), the Python community's official style guide, which recommends surrounding top-level function and class definitions with two blank lines (and a single blank line between methods inside a class, which we won't get to today). A few other PEP 8 conventions are also already reflected in the example above, worth pointing out explicitly since you'll see them everywhere in real Python code:
+
+- **Indentation** is 4 spaces per level (not a tab, and not some other number of spaces).
+- **Function and variable names** are lowercase, with underscores separating words (`parse_fasta`, `gc_content`, `percent_gc`) — this style is often called `snake_case`.
+- **Whitespace around operators and after commas** — a single space around `+=`, `/`, and `*`, and after commas in argument lists, but none directly inside parentheses.
+- **Quote consistency** — pick single quotes or double quotes for your strings, then stick with that choice throughout a given piece of code, rather than mixing the two arbitrarily.
+
+PEP 8 covers a lot more than this — line length limits, import ordering, and so on — and it's worth a skim once you're comfortable with the basics, since most Python code you'll read (and most collaborators you'll work with) follow it by default.
+
+To run it, save both files in the same directory, then run:
 
 ```bash
-python3 hello.py
+python3 sequences.py
+```
+
+You should see:
+
+```
+seq_001: 50.00% GC
+seq_002: 66.67% GC
+seq_003: 33.33% GC
+Average GC content: 50.00%
 ```
 
 ## A Few Useful Modules for Scientific Computing
-Python's standard library covers a lot of ground, but scientific and data-focused work usually leans on a few extra packages (install these with `pip3` inside a virtual environment, as described earlier):
+Python's standard library covers a lot of ground, but scientific and data-focused work usually leans on a few extra packages (install these with `pip3` inside a virtual environment, as described earlier).
 
-- **NumPy** is the go-to package for numerical arrays and matrix operations. It's dramatically more efficient than looping over plain Python lists by hand:
+A quick note on imports before we dive in: `import numpy` makes everything in a package available as `numpy.something`; adding `as np` gives it a shorter alias, so you can write `np.something` instead; and `from scipy.stats import ttest_1samp` pulls one specific name directly into your script, so you can refer to it with no prefix at all. You'll see both forms below.
 
-  ```python
-  >>> import numpy as np      # `as np` gives it a shorter alias
-  >>> celsius = [25.3, 24.8, 26.9, 23.9]
-  >>> temps = np.array(celsius)
-  >>> print(temps * 9 / 5 + 32)     # convert to Fahrenheit for every value at once
-  [77.54 76.64 80.42 75.02]
-  ```
+Let's pick up right where `sequences.py` left off: it built `gc_values`, a plain list of GC percentages, entirely by hand with a loop. Here's what a few libraries buy you once you have data like that.
 
-  Compare that to doing the same conversion with a plain list, where you'd need to loop over every element yourself:
+- **NumPy** is the go-to package for numerical arrays and matrix operations. Instead of writing your own `sum(...) / len(...)`, it gives you ready-made statistics:
 
   ```python
-  >>> fahrenheit = [c * 9 / 5 + 32 for c in celsius]
-  >>> print(fahrenheit)
-  [77.54, 76.64, 80.42, 75.02]
+  >>> import numpy as np
+  >>> gc_values = [50.0, 66.66666666666667, 33.333333333333336]
+  >>> print(f"{np.mean(gc_values):.2f}")
+  50.00
   ```
 
-- **SciPy** builds on NumPy with ready-made functions for statistics, physical constants, and other scientific computing needs:
+  `np.std(gc_values)` gets you the standard deviation just as easily, without writing the variance calculation out by hand.
+
+- **SciPy** builds on NumPy with ready-made functions for statistics and other scientific computing needs. For example: is our average GC content actually different from 50%, or is that close enough to be down to chance?
 
   ```python
-  >>> from scipy import constants
-  >>> constants.c            # the speed of light
-  299792458.0
-  >>> from scipy.stats import norm
-  >>> norm.cdf(5, 0, 3)      # P(x < 5) for a normal distribution with mean 0, std dev 3
-  0.9522096477271853
+  >>> from scipy.stats import ttest_1samp
+  >>> result = ttest_1samp(gc_values, 50)
+  >>> print(f"t = {result.statistic:.2f}, p = {result.pvalue:.2f}")
+  t = 0.00, p = 1.00
   ```
 
-- **Matplotlib** is a plotting library, for visualizing data either interactively or by saving it to an image file:
+  With only three sequences this isn't a meaningful test in practice — and a p-value of 1.00 here just reflects that our tiny sample's average happens to land exactly on the 50% we're testing against — but it shows how little code it takes to ask a real statistical question once a library is handling the math for you.
+
+- **Matplotlib** is a plotting library, for visualizing data either interactively or by saving it to an image file. Let's plot the same three values:
 
   ```python
   >>> import matplotlib.pyplot as plt
-  >>> plt.plot([1, 2, 3, 4])
-  >>> plt.ylabel('some numbers')
-  >>> plt.savefig('plot.png')   # save to a file, useful when working without a display
+  >>> names = ["seq_001", "seq_002", "seq_003"]
+  >>> plt.bar(names, gc_values)
+  >>> plt.ylabel("GC content (%)")
+  >>> plt.savefig("gc_content.png")   # save to a file, useful when working without a display
   ```
 
 Each of these has extensive documentation: [NumPy/SciPy](https://docs.scipy.org/doc/) and [Matplotlib](https://matplotlib.org/stable/users/index.html).
